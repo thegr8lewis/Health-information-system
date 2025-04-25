@@ -18,6 +18,7 @@ const UserRoutes = () => {
         <Route path="/program-management" element={<ProgramManagement />} />
         <Route path="/client-management" element={<ClientManagement />} />
         <Route path="/client" element={<Client />} />
+        <Route path="/client/:id" element={<Client/>} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </Layout>

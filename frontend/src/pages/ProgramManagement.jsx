@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, X, Check } from 'lucide-react';
+import axios from 'axios';
 
 const ProgramManagement = () => {
   const [programs, setPrograms] = useState([]);
@@ -8,6 +9,8 @@ const ProgramManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [programToDelete, setProgramToDelete] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -18,48 +21,26 @@ const ProgramManagement = () => {
     status: 'active'
   });
 
-  // Mock data - in real application, fetch from Django backend
+  // API base URL
+  const API_URL = 'http://localhost:8000/api/programs/';
+
+  // Fetch programs from API
+  const fetchPrograms = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(API_URL);
+      setPrograms(response.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch programs. Please try again later.');
+      console.error('Error fetching programs:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Simulating API call to fetch programs
-    const mockPrograms = [
-      {
-        id: 1,
-        name: "Weight Management",
-        description: "A comprehensive program focused on healthy weight loss and maintenance",
-        duration: "12 weeks",
-        category: "Lifestyle",
-        status: "active",
-        enrolledClients: 24
-      },
-      {
-        id: 2,
-        name: "Cardiac Rehabilitation",
-        description: "Recovery program for patients with heart conditions",
-        duration: "8 weeks",
-        category: "Rehabilitation",
-        status: "active",
-        enrolledClients: 18
-      },
-      {
-        id: 3,
-        name: "Diabetes Management",
-        description: "Program to help manage and control diabetes through lifestyle changes",
-        duration: "16 weeks",
-        category: "Chronic Disease",
-        status: "active",
-        enrolledClients: 31
-      },
-      {
-        id: 4,
-        name: "Prenatal Wellness",
-        description: "Health program for expectant mothers",
-        duration: "9 months",
-        category: "Maternal Health",
-        status: "inactive",
-        enrolledClients: 0
-      }
-    ];
-    setPrograms(mockPrograms);
+    fetchPrograms();
   }, []);
 
   // Handle form input changes
@@ -90,7 +71,7 @@ const ProgramManagement = () => {
     setFormData({
       name: program.name,
       description: program.description,
-      duration: program.duration,
+      duration: program.duration.toString(), // Ensure it's a string for the input
       category: program.category,
       status: program.status
     });
@@ -104,35 +85,45 @@ const ProgramManagement = () => {
   };
 
   // Delete a program
-  const confirmDeleteProgram = () => {
-    // In a real app, you would make an API call to delete the program
-    setPrograms(programs.filter(p => p.id !== programToDelete.id));
-    setIsDeleteModalOpen(false);
-    setProgramToDelete(null);
+  const confirmDeleteProgram = async () => {
+    try {
+      await axios.delete(`${API_URL}${programToDelete.id}/`);
+      setPrograms(programs.filter(p => p.id !== programToDelete.id));
+      setIsDeleteModalOpen(false);
+      setProgramToDelete(null);
+    } catch (err) {
+      console.error('Error deleting program:', err);
+      setError('Failed to delete program. Please try again.');
+    }
   };
 
   // Save program (create new or update existing)
-  const handleSaveProgram = () => {
-    if (currentProgram) {
-      // Update existing program
-      setPrograms(programs.map(p => 
-        p.id === currentProgram.id ? 
-        { ...p, ...formData } : 
-        p
-      ));
-    } else {
-      // Create new program
-      const newProgram = {
+  const handleSaveProgram = async () => {
+    try {
+      const programData = {
         ...formData,
-        id: programs.length ? Math.max(...programs.map(p => p.id)) + 1 : 1,
-        enrolledClients: 0
+        duration: parseInt(formData.duration) // Convert duration to number for backend
       };
-      setPrograms([...programs, newProgram]);
+
+      if (currentProgram) {
+        // Update existing program
+        const response = await axios.put(`${API_URL}${currentProgram.id}/`, programData);
+        setPrograms(programs.map(p => 
+          p.id === currentProgram.id ? response.data : p
+        ));
+      } else {
+        // Create new program
+        const response = await axios.post(API_URL, programData);
+        setPrograms([...programs, response.data]);
+      }
+      
+      // Close modal and reset form
+      setIsModalOpen(false);
+      setCurrentProgram(null);
+    } catch (err) {
+      console.error('Error saving program:', err);
+      setError('Failed to save program. Please check your inputs and try again.');
     }
-    
-    // Close modal and reset form
-    setIsModalOpen(false);
-    setCurrentProgram(null);
   };
 
   // Filter programs based on search term
@@ -141,6 +132,36 @@ const ProgramManagement = () => {
     program.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
     program.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading programs...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -177,8 +198,7 @@ const ProgramManagement = () => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled Clients</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration (days)</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
@@ -193,7 +213,6 @@ const ProgramManagement = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{program.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{program.duration}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{program.enrolledClients}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${program.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                       {program.status === 'active' ? 'Active' : 'Inactive'}
@@ -217,7 +236,7 @@ const ProgramManagement = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
                   No programs found. Create a new program or adjust your search.
                 </td>
               </tr>
@@ -226,7 +245,7 @@ const ProgramManagement = () => {
         </table>
       </div>
 
-      {/* Create/Edit Program Modal - Using a more transparent overlay */}
+      {/* Create/Edit Program Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-black opacity-50"></div>
@@ -244,8 +263,13 @@ const ProgramManagement = () => {
               </button>
             </div>
             <div className="p-6">
+              {error && (
+                <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Program Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Program Name*</label>
                 <input
                   type="text"
                   name="name"
@@ -253,49 +277,55 @@ const ProgramManagement = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter program name"
+                  required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description*</label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
                   placeholder="Enter program description"
+                  required
                 ></textarea>
               </div>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration (days)*</label>
                   <input
-                    type="text"
+                    type="number"
                     name="duration"
                     value={formData.duration}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g. 12 weeks"
+                    placeholder="e.g. 28"
+                    min="1"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category*</label>
                   <input
                     type="text"
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g. Weight Loss"
+                    placeholder="e.g. Fitness"
+                    required
                   />
                 </div>
               </div>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status*</label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -331,6 +361,11 @@ const ProgramManagement = () => {
               <p className="text-gray-600 mb-6">
                 Are you sure you want to delete the program "{programToDelete.name}"? This action cannot be undone.
               </p>
+              {error && (
+                <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
