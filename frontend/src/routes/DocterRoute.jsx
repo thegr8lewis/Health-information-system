@@ -15,6 +15,7 @@ const UserRoutes = () => {
         <Route path="/" element={<Login/>} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/program" element={<Program />} />
+        <Route path="/program/:id" element={<Program />} />
         <Route path="/program-management" element={<ProgramManagement />} />
         <Route path="/client-management" element={<ClientManagement />} />
         <Route path="/client" element={<Client />} />

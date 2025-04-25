@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, X, Check } from 'lucide-react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const ProgramManagement = () => {
   const [programs, setPrograms] = useState([]);
@@ -207,10 +208,15 @@ const ProgramManagement = () => {
             {filteredPrograms.length > 0 ? (
               filteredPrograms.map((program) => (
                 <tr key={program.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{program.name}</div>
-                    <div className="text-sm text-gray-500 truncate max-w-xs">{program.description}</div>
-                  </td>
+                               <td className="px-6 py-4 whitespace-nowrap">
+                <Link 
+                  to={`/program/${program.id}`}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                >
+                  {program.name}
+                </Link>
+                <div className="text-sm text-gray-500 truncate max-w-xs">{program.description}</div>
+              </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{program.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{program.duration}</td>
                   <td className="px-6 py-4 whitespace-nowrap">

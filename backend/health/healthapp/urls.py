@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     ProgramListCreate, ProgramRetrieveUpdateDestroy,
-    ClientListCreate, ClientRetrieveUpdateDestroy, ClientDetailView,
+    ClientListCreate, ClientRetrieveUpdateDestroy, ClientDetailView, ProgramClientsView
 )
 
 urlpatterns = [
@@ -13,4 +13,5 @@ urlpatterns = [
     path('clients/', ClientListCreate.as_view(), name='client-list-create'),
     path('clients/<int:pk>/', ClientRetrieveUpdateDestroy.as_view(), name='client-retrieve-update-destroy'),
     path('clients/<int:client_id>/detail/', ClientDetailView.as_view(), name='client-detail'),
+     path('programs/<int:program_id>/clients/', ProgramClientsView.as_view(), name='program-clients'),
 ]
