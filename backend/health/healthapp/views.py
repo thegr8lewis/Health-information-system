@@ -20,17 +20,11 @@ class SuperUserUpdateView(APIView):
         serializer = SuperUserUpdateSerializer(request.user)
         return Response(serializer.data)
 
-    def put(self, request):
-        return self._update_user(request)
-
     def patch(self, request):
-        return self._update_user(request, partial=True)
-
-    def _update_user(self, request, partial=False):
         serializer = SuperUserUpdateSerializer(
             request.user,
             data=request.data,
-            partial=partial
+            partial=True
         )
 
         if not serializer.is_valid():
@@ -39,11 +33,17 @@ class SuperUserUpdateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer.save()
-        return Response(
-            {"message": "Superuser updated successfully!"},
-            status=status.HTTP_200_OK
-        )
+        try:
+            serializer.save()
+            return Response(
+                {"message": "User updated successfully!"},
+                status=status.HTTP_200_OK
+            )
+        except serializers.ValidationError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
 
 class LoginView(APIView):

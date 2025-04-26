@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from "react";
 import { User, Lock, Mail, Check, Eye, EyeOff, Save, ArrowRight, ChevronRight } from "lucide-react";
 import axios from 'axios';
@@ -64,13 +62,13 @@ export default function SettingsPage() {
     }
 
     try {
-      // Prepare the data to send based on active section
+
       const payload = activeSection === "profile" 
-        ? { username: formData.username, email: formData.email }
-        : { 
-            current_password: formData.currentPassword,
-            new_password: formData.newPassword 
-          };
+      ? { username: formData.username, email: formData.email }
+      : { 
+          current_password: formData.currentPassword,  // Match backend field name
+          password: formData.newPassword  // Changed from newPassword to password
+        };
 
       const response = await axios.patch(
         'http://localhost:8000/api/auth/superuser/update/',
@@ -115,34 +113,34 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-3xl">
         {successMessage && (
-          <div className="mb-6 bg-emerald-900/40 backdrop-blur-sm border border-emerald-500/30 p-4 rounded-xl flex items-center text-emerald-300 transform transition-all duration-300 animate-fade-in">
+          <div className="mb-6 bg-white backdrop-blur-sm border border-gray-300 p-4 rounded-xl flex items-center text-black transform transition-all duration-300 animate-fade-in">
             <Check className="mr-2 h-5 w-5" />
             <span>{successMessage}</span>
           </div>
         )}
         
         {errorMessage && (
-          <div className="mb-6 bg-red-900/40 backdrop-blur-sm border border-red-500/30 p-4 rounded-xl flex items-center text-red-300 transform transition-all duration-300 animate-fade-in">
+          <div className="mb-6 bg-white backdrop-blur-sm border border-gray-300 p-4 rounded-xl flex items-center text-black transform transition-all duration-300 animate-fade-in">
             <span>{errorMessage}</span>
           </div>
         )}
         
-        <div className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700">
-          <div className="px-8 py-6 bg-gradient-to-r from-blue-900/40 to-purple-900/40 border-b border-gray-700">
-            <h1 className="text-3xl font-bold text-white">Account Settings</h1>
-            <p className="text-gray-400 mt-1">Manage your profile and security preferences</p>
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-300">
+          <div className="px-8 py-6 bg-gray-100 border-b border-gray-300">
+            <h1 className="text-3xl font-bold text-black">Account Settings</h1>
+            <p className="text-gray-600 mt-1">Manage your profile and security preferences</p>
           </div>
           
           <div className="flex flex-col lg:flex-row">
             {/* Sidebar */}
-            <div className="lg:w-64 bg-gray-800/50 lg:border-r border-gray-700">
+            <div className="lg:w-64 bg-gray-50 lg:border-r border-gray-300">
               <nav className="p-4">
                 <button 
                   onClick={() => setActiveSection("profile")}
                   className={`flex items-center justify-between w-full p-3 rounded-xl text-left mb-2 transition-all duration-200 ${
                     activeSection === "profile" 
-                      ? "bg-blue-600/20 border border-blue-500/30 text-blue-400" 
-                      : "text-gray-400 hover:bg-gray-700/50 hover:text-gray-200"
+                      ? "bg-gray-200 border border-gray-300 text-black" 
+                      : "text-gray-600 hover:bg-gray-100 hover:text-black"
                   }`}>
                   <div className="flex items-center">
                     <User className="h-5 w-5 mr-3" />
@@ -155,8 +153,8 @@ export default function SettingsPage() {
                   onClick={() => setActiveSection("security")}
                   className={`flex items-center justify-between w-full p-3 rounded-xl text-left transition-all duration-200 ${
                     activeSection === "security" 
-                      ? "bg-blue-600/20 border border-blue-500/30 text-blue-400" 
-                      : "text-gray-400 hover:bg-gray-700/50 hover:text-gray-200"
+                      ? "bg-gray-200 border border-gray-300 text-black" 
+                      : "text-gray-600 hover:bg-gray-100 hover:text-black"
                   }`}>
                   <div className="flex items-center">
                     <Lock className="h-5 w-5 mr-3" />
@@ -174,10 +172,10 @@ export default function SettingsPage() {
                   <>
                     <div className="mb-8 flex justify-center">
                       <div className="relative">
-                        <div className="h-24 w-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                        <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center text-black text-2xl font-bold">
                           {formData.username.substring(0, 2).toUpperCase()}
                         </div>
-                        <button type="button" className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200">
+                        <button type="button" className="absolute bottom-0 right-0 bg-gray-800 p-2 rounded-full shadow-lg hover:bg-black transition-colors duration-200">
                           <User className="h-4 w-4 text-white" />
                         </button>
                       </div>
@@ -185,34 +183,34 @@ export default function SettingsPage() {
                     
                     {/* Username Section */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-gray-400 mb-2 transition-colors group-focus-within:text-blue-400">Username</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-2 transition-colors group-focus-within:text-black">Username</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <User className="h-5 w-5 text-gray-500 group-focus-within:text-blue-500 transition-colors duration-200" />
+                          <User className="h-5 w-5 text-gray-500 group-focus-within:text-black transition-colors duration-200" />
                         </div>
                         <input
                           type="text"
                           name="username"
                           value={formData.username}
                           onChange={handleChange}
-                          className="pl-12 block w-full rounded-xl border border-gray-600 bg-gray-700/50 py-3.5 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none focus:bg-gray-700 transition-all duration-200"
+                          className="pl-12 block w-full rounded-xl border border-gray-300 bg-white py-3.5 text-black shadow-sm focus:border-gray-500 focus:ring-gray-500 focus:outline-none focus:bg-white transition-all duration-200"
                         />
                       </div>
                     </div>
 
                     {/* Email Section */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-gray-400 mb-2 transition-colors group-focus-within:text-blue-400">Email</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-2 transition-colors group-focus-within:text-black">Email</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Mail className="h-5 w-5 text-gray-500 group-focus-within:text-blue-500 transition-colors duration-200" />
+                          <Mail className="h-5 w-5 text-gray-500 group-focus-within:text-black transition-colors duration-200" />
                         </div>
                         <input
                           type="email"
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
-                          className="pl-12 block w-full rounded-xl border border-gray-600 bg-gray-700/50 py-3.5 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none focus:bg-gray-700 transition-all duration-200"
+                          className="pl-12 block w-full rounded-xl border border-gray-300 bg-white py-3.5 text-black shadow-sm focus:border-gray-500 focus:ring-gray-500 focus:outline-none focus:bg-white transition-all duration-200"
                         />
                       </div>
                     </div>
@@ -222,28 +220,28 @@ export default function SettingsPage() {
                 {activeSection === "security" && (
                   <>
                     <div className="mb-6">
-                      <h2 className="text-xl font-semibold text-white mb-2">Password Settings</h2>
-                      <p className="text-gray-400 text-sm">Update your password to keep your account secure</p>
+                      <h2 className="text-xl font-semibold text-black mb-2">Password Settings</h2>
+                      <p className="text-gray-600 text-sm">Update your password to keep your account secure</p>
                     </div>
                     
                     {/* Current Password */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-gray-400 mb-2 transition-colors group-focus-within:text-blue-400">Current Password</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-2 transition-colors group-focus-within:text-black">Current Password</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Lock className="h-5 w-5 text-gray-500 group-focus-within:text-blue-500 transition-colors duration-200" />
+                          <Lock className="h-5 w-5 text-gray-500 group-focus-within:text-black transition-colors duration-200" />
                         </div>
                         <input
                           type={showPassword ? "text" : "password"}
                           name="currentPassword"
                           value={formData.currentPassword}
                           onChange={handleChange}
-                          className="pl-12 block w-full rounded-xl border border-gray-600 bg-gray-700/50 py-3.5 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none focus:bg-gray-700 transition-all duration-200"
+                          className="pl-12 block w-full rounded-xl border border-gray-300 bg-white py-3.5 text-black shadow-sm focus:border-gray-500 focus:ring-gray-500 focus:outline-none focus:bg-white transition-all duration-200"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-200"
+                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-600 hover:text-black"
                         >
                           {showPassword ? (
                             <EyeOff className="h-5 w-5" />
@@ -256,46 +254,46 @@ export default function SettingsPage() {
 
                     {/* New Password */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-gray-400 mb-2 transition-colors group-focus-within:text-blue-400">New Password</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-2 transition-colors group-focus-within:text-black">New Password</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Lock className="h-5 w-5 text-gray-500 group-focus-within:text-blue-500 transition-colors duration-200" />
+                          <Lock className="h-5 w-5 text-gray-500 group-focus-within:text-black transition-colors duration-200" />
                         </div>
                         <input
                           type={showPassword ? "text" : "password"}
                           name="newPassword"
                           value={formData.newPassword}
                           onChange={handleChange}
-                          className="pl-12 block w-full rounded-xl border border-gray-600 bg-gray-700/50 py-3.5 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none focus:bg-gray-700 transition-all duration-200"
+                          className="pl-12 block w-full rounded-xl border border-gray-300 bg-white py-3.5 text-black shadow-sm focus:border-gray-500 focus:ring-gray-500 focus:outline-none focus:bg-white transition-all duration-200"
                         />
                       </div>
                     </div>
 
                     {/* Confirm Password */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-gray-400 mb-2 transition-colors group-focus-within:text-blue-400">Confirm New Password</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-2 transition-colors group-focus-within:text-black">Confirm New Password</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Lock className="h-5 w-5 text-gray-500 group-focus-within:text-blue-500 transition-colors duration-200" />
+                          <Lock className="h-5 w-5 text-gray-500 group-focus-within:text-black transition-colors duration-200" />
                         </div>
                         <input
                           type={showPassword ? "text" : "password"}
                           name="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleChange}
-                          className="pl-12 block w-full rounded-xl border border-gray-600 bg-gray-700/50 py-3.5 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none focus:bg-gray-700 transition-all duration-200"
+                          className="pl-12 block w-full rounded-xl border border-gray-300 bg-white py-3.5 text-black shadow-sm focus:border-gray-500 focus:ring-gray-500 focus:outline-none focus:bg-white transition-all duration-200"
                         />
                       </div>
                     </div>
                   </>
                 )}
 
-                {/* Submit Button */}
+                {/* Submit Button - Keeping original colors */}
                 <div className="pt-6">
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className={`w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium py-3.5 px-4 rounded-xl shadow-lg transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 flex items-center justify-center ${
+                    className={`w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium py-3.5 px-4 rounded-xl shadow-lg transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 flex items-center justify-center ${
                       isLoading ? "opacity-70 cursor-not-allowed" : ""
                     }`}
                   >

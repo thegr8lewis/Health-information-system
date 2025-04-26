@@ -155,7 +155,11 @@ const ClientManagement = () => {
   // Delete a client
   const confirmDeleteClient = async () => {
     try {
-      await axios.delete(`${API_URL}${clientToDelete.id}/`);
+      await axios.delete(`${API_URL}${clientToDelete.id}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       setClients(clients.filter(c => c.id !== clientToDelete.id));
       setIsDeleteModalOpen(false);
       setClientToDelete(null);
@@ -170,13 +174,21 @@ const ClientManagement = () => {
     try {
       if (currentClient) {
         // Update existing client
-        const response = await axios.put(`${API_URL}${currentClient.id}/`, formData);
+        const response = await axios.put(`${API_URL}${currentClient.id}/`, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
         setClients(clients.map(c => 
           c.id === currentClient.id ? response.data : c
         ));
       } else {
         // Create new client
-        const response = await axios.post(API_URL, formData);
+        const response = await axios.post(API_URL, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
         setClients([...clients, response.data]);
       }
       
@@ -353,7 +365,7 @@ const ClientManagement = () => {
                       <div className="flex justify-end space-x-2">
                         <button 
                           onClick={() => handleEditClient(client)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-4 bg-indigo-50 p-2 rounded-lg hover:bg-indigo-100 transition-colorss"
+                          className="text-indigo-600 hover:text-indigo-900 mr-4 bg-indigo-50 p-2 rounded-lg hover:bg-indigo-100 transition-colors"
                           aria-label="Edit client"
                         >
                           <Edit2 size={18} />

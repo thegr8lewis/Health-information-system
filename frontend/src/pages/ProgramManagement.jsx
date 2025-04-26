@@ -92,7 +92,11 @@ const ProgramManagement = () => {
   // Delete a program
   const confirmDeleteProgram = async () => {
     try {
-      await axios.delete(`${API_URL}${programToDelete.id}/`);
+      await axios.delete(`${API_URL}${programToDelete.id}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       setPrograms(programs.filter(p => p.id !== programToDelete.id));
       setIsDeleteModalOpen(false);
       setProgramToDelete(null);
@@ -112,13 +116,21 @@ const ProgramManagement = () => {
 
       if (currentProgram) {
         // Update existing program
-        const response = await axios.put(`${API_URL}${currentProgram.id}/`, programData);
+        const response = await axios.put(`${API_URL}${currentProgram.id}/`, programData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
         setPrograms(programs.map(p => 
           p.id === currentProgram.id ? response.data : p
         ));
       } else {
         // Create new program
-        const response = await axios.post(API_URL, programData);
+        const response = await axios.post(API_URL, programData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
         setPrograms([...programs, response.data]);
       }
       

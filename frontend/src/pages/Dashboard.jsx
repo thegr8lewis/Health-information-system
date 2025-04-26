@@ -47,7 +47,7 @@ const Dashboard = () => {
           id: client.id,
           name: `${client.first_name} ${client.last_name}`,
           age: calculateAge(client.date_of_birth),
-          program: client.program?.name || "Not assigned",
+          program: client.program?.name || client.program_name || client.program_id || "Not assigned",
           date: formatDate(client.created_at)
         })));
 

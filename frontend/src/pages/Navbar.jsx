@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { Bell, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import axios from "axios";
 
 const Navbar = () => {
-  const [showNotifications, setShowNotifications] = useState(false);
   const [admin, setAdmin] = useState({
     name: "",
     email: "",
@@ -11,12 +10,6 @@ const Navbar = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  const notifications = [
-    { id: 1, text: "New client registered", time: "2 minutes ago", read: false },
-    { id: 2, text: "Program update: Weight Management", time: "1 hour ago", read: false },
-    { id: 3, text: "Meeting reminder: Staff update at 3PM", time: "3 hours ago", read: true }
-  ];
 
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -60,78 +53,44 @@ const Navbar = () => {
 
   if (isLoading) {
     return (
-      <nav className="bg-white shadow-sm border-b px-4 py-3 flex justify-between items-center">
+      <nav className="bg-gradient-to-r from-white to-gray-50 px-4 py-3 flex justify-between items-center relative">
         <div className="flex-1"></div>
-        <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
+        <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
       </nav>
     );
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b px-4 py-3 flex justify-between items-center">
+    <nav className="bg-gradient-to-r from-white to-gray-50 px-6 py-4 flex justify-between items-center relative">
       <div className="flex-1"></div>
-      <div className="flex items-center gap-6">
-        <div className="relative">
-          <button 
-            className="relative p-1 rounded-full hover:bg-gray-100 transition-colors"
-            onClick={() => setShowNotifications(!showNotifications)}
-          >
-            <Bell className="h-6 w-6 text-gray-600" />
-            {notifications.filter(n => !n.read).length > 0 && (
-              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <div className="group relative cursor-pointer">
+            {admin.avatar ? (
+              <img 
+                src={admin.avatar} 
+                alt="Admin avatar" 
+                className="h-10 w-10 rounded-full object-cover ring-2 ring-indigo-100 transition-all hover:ring-4"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-medium shadow-md transition-all hover:shadow-lg">
+                {getInitials(admin.name)}
+              </div>
             )}
-          </button>
-          
-          {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg border z-50">
-              <div className="p-3 border-b">
-                <h3 className="font-medium">Notifications</h3>
-              </div>
-              <div className="max-h-80 overflow-y-auto">
-                {notifications.length > 0 ? (
-                  notifications.map(notification => (
-                    <div 
-                      key={notification.id} 
-                      className={`p-3 border-b hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''}`}
-                    >
-                      <p className="text-sm font-medium">{notification.text}</p>
-                      <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-4 text-center text-gray-500">
-                    No notifications
-                  </div>
-                )}
-              </div>
-              <div className="p-2 text-center border-t">
-                <button className="text-sm text-blue-600 hover:text-blue-800">
-                  Mark all as read
-                </button>
-              </div>
+            <div className="absolute top-12 right-0 hidden min-w-max rounded-md bg-white p-2 shadow-lg group-hover:block">
+              <p className="whitespace-nowrap font-medium text-sm">{admin.name}</p>
+              <p className="whitespace-nowrap text-xs text-gray-500">{admin.email}</p>
             </div>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-3">
-          {admin.avatar ? (
-            <img 
-              src={admin.avatar} 
-              alt="Admin avatar" 
-              className="h-8 w-8 rounded-full object-cover"
-            />
-          ) : (
-            <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-medium">
-              {getInitials(admin.name)}
-            </div>
-          )}
-          <div className="hidden md:block">
+          </div>
+          <div className="hidden md:flex flex-col">
             <p className="font-medium text-sm">{admin.name}</p>
             <p className="text-xs text-gray-500">{admin.email}</p>
           </div>
-          <ChevronDown className="h-4 w-4 text-gray-500" />
+          <ChevronDown className="h-4 w-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors" />
         </div>
       </div>
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
     </nav>
   );
 };
