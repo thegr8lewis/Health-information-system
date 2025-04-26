@@ -29,7 +29,11 @@ const ProgramManagement = () => {
   const fetchPrograms = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(API_URL);
+      const response = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       setPrograms(response.data);
       setError(null);
     } catch (err) {

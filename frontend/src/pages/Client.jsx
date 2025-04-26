@@ -26,8 +26,16 @@ const ClientProfile = () => {
       try {
         setIsLoading(true);
         const [clientRes, programsRes] = await Promise.all([
-          axios.get(`http://localhost:8000/api/clients/${id}/`),
-          axios.get('http://localhost:8000/api/programs/')
+          axios.get(`http://localhost:8000/api/clients/${id}/`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+            }
+          }),
+          axios.get('http://localhost:8000/api/programs/', {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+            }
+          })
         ]);
         setClient(clientRes.data);
         setPrograms(programsRes.data);
@@ -62,7 +70,11 @@ const ClientProfile = () => {
 
   const handleSave = async () => {
     try {
-      const response = await axios.put(`http://localhost:8000/api/clients/${id}/`, formData);
+      const response = await axios.put(`http://localhost:8000/api/clients/${id}/`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       setClient(response.data);
       setShowEditModal(false);
       setError(null);

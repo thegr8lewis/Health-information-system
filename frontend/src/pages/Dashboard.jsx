@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   UserPlus, 
@@ -10,21 +10,119 @@ import {
   TrendingUp,
   Activity
 } from "lucide-react";
+import axios from "axios";
 
 const Dashboard = () => {
-  // Mock data
-  const stats = [
-    { title: "Total Clients", value: 458, icon: Users, color: "bg-blue-500" },
-    { title: "Active Programs", value: 27, icon: Calendar, color: "bg-green-500" },
-    { title: "Program Completions", value: 189, icon: TrendingUp, color: "bg-purple-500" },
-    { title: "Avg. Client Satisfaction", value: "4.8/5", icon: Activity, color: "bg-amber-500" }
-  ];
-  
-  const recentClients = [
-    { id: 1, name: "Emma Thompson", age: 34, program: "Weight Management", date: "Today" },
-    { id: 2, name: "John Baker", age: 45, program: "Heart Health", date: "Yesterday" },
-    { id: 3, name: "Mia Chen", age: 29, program: "Stress Relief", date: "Apr 22, 2025" }
-  ];
+  const [stats, setStats] = useState([]);
+  const [recentClients, setRecentClients] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Create axios instance with authorization header
+  const api = axios.create({
+    baseURL: "http://localhost:8000/api/",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+    }
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch all data in parallel
+        const [statsRes, clientsRes] = await Promise.all([
+          api.get("dashboard/stats/"),
+          api.get("clients/?ordering=-created_at&limit=3")
+        ]);
+
+        setStats([
+          { title: "Total Clients", value: statsRes.data.total_clients, icon: Users, color: "bg-blue-500" },
+          { title: "Active Programs", value: statsRes.data.active_programs, icon: Calendar, color: "bg-green-500" },
+          { title: "Program Completions", value: statsRes.data.program_completions, icon: TrendingUp, color: "bg-purple-500" },
+          { title: "Avg. Client Satisfaction", value: `${statsRes.data.avg_satisfaction}/5`, icon: Activity, color: "bg-amber-500" }
+        ]);
+
+        setRecentClients(clientsRes.data.map(client => ({
+          id: client.id,
+          name: `${client.first_name} ${client.last_name}`,
+          age: calculateAge(client.date_of_birth),
+          program: client.program?.name || "Not assigned",
+          date: formatDate(client.created_at)
+        })));
+
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          // Handle unauthorized access
+          setError("Session expired. Please login again.");
+          // Optionally redirect to login page
+          // navigate('/login');
+        } else {
+          setError("Failed to load dashboard data");
+          console.error("Dashboard data error:", err);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // Helper function to calculate age from date of birth
+  const calculateAge = (dob) => {
+    if (!dob) return "N/A";
+    const birthDate = new Date(dob);
+    const diff = Date.now() - birthDate.getTime();
+    const ageDate = new Date(diff);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
+
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    const now = new Date();
+    
+    if (date.toDateString() === now.toDateString()) {
+      return "Today";
+    }
+    
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    }
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border-l-4 border-red-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 px-2">
@@ -147,7 +245,7 @@ const Dashboard = () => {
                   <td>{client.date}</td>
                   <td>
                     <Link 
-                      to={`/client?id=${client.id}`}
+                      to={`/client/${client.id}`}
                       className="text-indigo-600 hover:text-indigo-800 font-medium text-sm"
                     >
                       View Details

@@ -34,8 +34,16 @@ const ClientManagement = () => {
     try {
       setIsLoading(true);
       const [clientsRes, programsRes] = await Promise.all([
-        axios.get(API_URL),
-        axios.get(PROGRAMS_API_URL + '?status=active')
+        axios.get(API_URL, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        }),
+        axios.get(PROGRAMS_API_URL + '?status=active', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        })
       ]);
       setClients(clientsRes.data);
       setPrograms(programsRes.data);

@@ -37,7 +37,11 @@ const ProgramDetail = () => {
     const fetchProgramData = async () => {
       try {
         setIsLoading(true);
-        const programRes = await axios.get(`http://localhost:8000/api/programs/${id}/`);
+        const programRes = await axios.get(`http://localhost:8000/api/programs/${id}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
         setProgram(programRes.data);
         setFormData({
           name: programRes.data.name,
@@ -47,7 +51,11 @@ const ProgramDetail = () => {
           status: programRes.data.status
         });
         
-        const clientsRes = await axios.get(`http://localhost:8000/api/programs/${id}/clients/`);
+        const clientsRes = await axios.get(`http://localhost:8000/api/programs/${id}/clients/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
         setClients(clientsRes.data);
       } catch (err) {
         setError('Failed to fetch program data');
@@ -75,7 +83,11 @@ const ProgramDetail = () => {
         duration: parseInt(formData.duration)
       };
       
-      const response = await axios.put(`http://localhost:8000/api/programs/${id}/`, updatedProgram);
+      const response = await axios.put(`http://localhost:8000/api/programs/${id}/`, updatedProgram, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       setProgram(response.data);
       setShowEditModal(false);
       setError(null);
@@ -99,7 +111,11 @@ const ProgramDetail = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/programs/${id}/`);
+      await axios.delete(`http://localhost:8000/api/programs/${id}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       navigate('/program-management');
     } catch (err) {
       setError('Failed to delete program');

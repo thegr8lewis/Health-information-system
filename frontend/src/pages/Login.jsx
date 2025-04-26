@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/react.svg"; // Make sure to add your logo
+import axios from "axios";
+import logo from "../assets/react.svg";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +18,6 @@ const Login = () => {
       ...formData,
       [name]: value,
     });
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -32,7 +32,7 @@ const Login = () => {
     else if (!/\S+@\S+\.\S+/.test(formData.email)) tempErrors.email = "Email is invalid";
     
     if (!formData.password) tempErrors.password = "Password is required";
-    else if (formData.password.length < 6) tempErrors.password = "Password must be at least 6 characters";
+    else if (formData.password.length < 0) tempErrors.password = "Password must be at least 6 characters";
     
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
@@ -45,19 +45,36 @@ const Login = () => {
       setIsLoading(true);
       
       try {
-        // In a real app, this would be an API call to your Django backend
-        // For demo purposes, we'll simulate a successful login after a delay
-        setTimeout(() => {
-          console.log("Login credentials:", formData);
-          // Store auth token or user data in local storage/context
-          localStorage.setItem("userLoggedIn", "true");
-          localStorage.setItem("userName", "Dr. Sarah Johnson");
-          navigate("/dashboard"); // Redirect to dashboard on successful login
-          setIsLoading(false);
-        }, 1000);
+        // API call to Django backend
+        const response = await axios.post("http://localhost:8000/api/auth/login/", formData);
+        
+        // Store tokens and user data
+        localStorage.setItem("accessToken", response.data.access);
+        localStorage.setItem("refreshToken", response.data.refresh);
+        localStorage.setItem("userName", response.data.user.name);
+        localStorage.setItem("userEmail", response.data.user.email);
+        
+        // Set default authorization header for future requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+        
+        navigate("/dashboard");
       } catch (error) {
-        console.error("Login failed:", error);
-        setErrors({ general: "Login failed. Please try again." });
+        console.error("Login error:", error.response?.data);
+        
+        if (error.response?.status === 401) {
+          setErrors({ general: "Invalid email or password" });
+        } else if (error.response?.data) {
+          // Handle Django validation errors
+          const apiErrors = error.response.data;
+          setErrors({
+            email: apiErrors.email?.[0] || "",
+            password: apiErrors.password?.[0] || "",
+            general: apiErrors.non_field_errors?.[0] || "Login failed. Please try again."
+          });
+        } else {
+          setErrors({ general: "Network error. Please try again." });
+        }
+      } finally {
         setIsLoading(false);
       }
     }
