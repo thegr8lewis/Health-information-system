@@ -117,25 +117,22 @@ Lewis Momanyi - [Lewis.nyakaru@gmail.com](mailto:Lewis.nyakaru@gmail.com)
 
 ---
 
+# Client Profile API - Integration Guide  
 
-Client Profile API - Integration Guide
-🔐 Authentication
-To access the API, you must authenticate using a JWT (JSON Web Token).
+## 🔐 **Authentication**  
+To access the API, you must authenticate using a **JWT (JSON Web Token)**.  
 
-Step 1: Obtain API Credentials
+### **Step 1: Obtain API Credentials**  
+📧 **Contact:** `Lewis.nyakaru@gmail.com` to request:  
+- `client_id`  
+- `client_secret`  
+- Auth endpoint (`/api/auth/token/`)  
 
-client_id
+### **Step 2: Get Access Token**  
+Send a `POST` request to generate a token:  
 
-client_secret
-
-Auth endpoint (/api/auth/token/)
-
-Step 2: Get Access Token
-Send a POST request to generate a token:
-
-Request:
-
-http
+**Request:**  
+```http
 POST /api/auth/token/
 Content-Type: application/json
 
@@ -143,30 +140,36 @@ Content-Type: application/json
   "client_id": "YOUR_CLIENT_ID",
   "client_secret": "YOUR_CLIENT_SECRET"
 }
-Response:
+```  
 
-json
+**Response:**  
+```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
   "token_type": "Bearer",
   "expires_in": 3600
 }
-📡 API Endpoint
-Get Client Profile
-Retrieve client details by their unique client_id.
+```  
 
-Request:
+---
 
-http
+## 📡 **API Endpoint**  
+### **Get Client Profile**  
+Retrieve client details by their unique `client_id`.  
+
+**Request:**  
+```http
 GET /api/external/clients/{client_id}/
 Authorization: Bearer YOUR_ACCESS_TOKEN
-Path Parameter:
+```  
 
-Field	Type	Description
-client_id	string	Unique client identifier
-Response (Success - 200 OK):
+**Path Parameter:**  
+| Field | Type | Description |  
+|-------|------|-------------|  
+| `client_id` | `string` | Unique client identifier |  
 
-json
+**Response (Success - 200 OK):**  
+```json
 {
   "id": "12345",
   "name": "Jane Doe",
@@ -190,27 +193,26 @@ json
     "last_updated": "2024-01-05T14:25:00Z"
   }
 }
-Error Responses:
+```  
 
-401 Unauthorized → Invalid/missing token
+**Error Responses:**  
+- `401 Unauthorized` → Invalid/missing token  
+- `403 Forbidden` → Insufficient permissions  
+- `404 Not Found` → Client does not exist  
 
-403 Forbidden → Insufficient permissions
+---
 
-404 Not Found → Client does not exist
+## 🔒 **Security & Monitoring**  
+- Each request is logged with:  
+  - Requesting application  
+  - IP address  
+  - Timestamp  
+- Tokens expire after **1 hour** (3600 seconds).  
 
-🔒 Security & Monitoring
-Each request is logged with:
+---
 
-Requesting application
-
-IP address
-
-Timestamp
-
-Tokens expire after 1 hour (3600 seconds).
-
-📝 Usage Example (Python)
-python
+## 📝 **Usage Example (Python)**  
+```python
 import requests
 
 # 1. Get Token
@@ -232,5 +234,15 @@ if response.status_code == 200:
     print(response.json())
 else:
     print(f"Error: {response.status_code}")
+```  
+
+---
+
+## ❓ **Support**  
+For issues, contact:  
+📧 **Email:** [Lewis.nyakaru@gmail.com](mailto:Lewis.nyakaru@gmail.com)  
+📞 **Phone:** +254 797 053 213  
+
+---
 
 
