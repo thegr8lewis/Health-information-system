@@ -207,8 +207,6 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
   - Requesting application  
   - IP address  
   - Timestamp  
-- Tokens expire after **1 hour** (3600 seconds).  
-
 ---
 
 ## 📝 **Usage Example (Python)**  
