@@ -1,5 +1,5 @@
 from rest_framework import generics, viewsets  # Add viewsets to imports
-from .models import Client, Program
+from .models import Client, Program, AdminCreationLog, ClientAccessLog
 from .serializers import ClientSerializer, ProgramSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,6 +12,104 @@ from django.contrib.auth.models import User
 from .serializers import SuperUserUpdateSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.throttling import UserRateThrottle
+from django.utils import timezone
+from django.contrib.gis.geoip2 import GeoIP2
+from .serializers import AdminCreationSerializer, AdminCreationLogSerializer
+
+class AdminCreationView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def post(self, request):
+        serializer = AdminCreationSerializer(data=request.data)
+        if serializer.is_valid():
+            new_admin = serializer.save()
+            
+            # Log the admin creation
+            AdminCreationLog.objects.create(
+                creator=request.user,
+                new_admin=new_admin
+            )
+            
+            return Response(
+                {"message": "Admin created successfully!"},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AdminCreationLogView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    
+    def get(self, request):
+        logs = AdminCreationLog.objects.all().order_by('-created_at')
+        serializer = AdminCreationLogSerializer(logs, many=True)
+        return Response(serializer.data)
+
+class ClientAccessLogView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        logs = ClientAccessLog.objects.all().order_by('-access_time')[:50]
+        data = [{
+            'client_name': f"{log.client.first_name} {log.client.last_name}",
+            'accessor_email': log.accessor.email,
+            'access_time': log.access_time,
+            'ip_address': log.ip_address,
+            'location': self._get_location(log.ip_address)
+        } for log in logs]
+        return Response(data)
+    
+    def _get_location(self, ip):
+        try:
+            # Handle local IPs
+            if ip in ['127.0.0.1', '::1']:
+                return 'Localhost'
+        
+            return 'Unknown'  #
+        except Exception as e:
+            print(f"Error getting location for IP {ip}: {str(e)}")
+            return 'Unknown'
+
+class ClientProfileAPIView(APIView):
+    def get(self, request, client_id):
+        try:
+            client = Client.objects.get(id=client_id)
+            
+            # Log the access
+            ip_address = request.META.get('REMOTE_ADDR')
+            ClientAccessLog.objects.create(
+                client=client,
+                accessor=request.user,
+                ip_address=ip_address
+            )
+            
+            serializer = ClientSerializer(client)
+            return Response(serializer.data)
+        except Client.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+class ClientAccessLogView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        logs = ClientAccessLog.objects.all().order_by('-access_time')[:50]
+        data = [{
+            'client_name': f"{log.client.first_name} {log.client.last_name}",
+            'accessor_email': log.accessor.email,
+            'access_time': log.access_time,
+            'ip_address': log.ip_address,
+            'location': self.get_location(log.ip_address)
+        } for log in logs]
+        return Response(data)
+    
+    def get_location(self, ip):
+        try:
+            g = GeoIP2()
+            return g.city(ip)['city'] or 'Unknown'
+        except:
+            return 'Unknown'
+
+
 
 class SuperUserUpdateView(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser] 

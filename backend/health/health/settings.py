@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import os
 from datetime import timedelta
+import dj_database_url
 
 load_dotenv()
 
@@ -81,6 +82,29 @@ WSGI_APPLICATION = 'health.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',  # Using SQLite for local development
+#         'NAME': BASE_DIR / 'db.sqlite3',        # This will create a SQLite database file
+#     }
+# }
+
+# # Only override for production or if specifically using MySQL locally
+# if os.getenv('ENVIRONMENT') == 'PRODUCTION':
+#     DATABASES['default'] = dj_database_url.parse(os.getenv('DATABASE_URL'))
+# elif os.getenv('MYSQL_LOCALLY', 'False').lower() == 'true':
+#     DATABASES['default'] = {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.getenv('DB_NAME', 'default_db'),
+#         'USER': os.getenv('DB_USER', 'root'),
+#         'PASSWORD': os.getenv('DB_PASSWORD', ''),
+#         'HOST': os.getenv('DB_HOST', 'localhost'),
+#         'PORT': os.getenv('DB_PORT', '3306'),
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#             'charset': 'utf8mb4',
+#         },
+#     }
 
 DATABASES = {
     'default': {
@@ -96,15 +120,22 @@ DATABASES = {
         },
     }
 }
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-    )
+    ),
+     'DEFAULT_THROTTLE_RATES': {
+        'user': '100/day',  
+    }
 }
 
+# Add to your settings.py
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')  # Create this directory
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=7),  

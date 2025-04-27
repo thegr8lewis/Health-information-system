@@ -3,7 +3,8 @@ from .views import (
     ProgramListCreate, ProgramRetrieveUpdateDestroy,
     ClientListCreate, ClientRetrieveUpdateDestroy,
       ClientDetailView, ProgramClientsView, DashboardStatsView,
-        CurrentUserView,  LoginView, SuperUserUpdateView
+        CurrentUserView,  LoginView, SuperUserUpdateView, 
+        ClientProfileAPIView, ClientAccessLogView, AdminCreationView, AdminCreationLogView
 )
 
 urlpatterns = [
@@ -20,5 +21,9 @@ urlpatterns = [
     path('auth/user/', CurrentUserView.as_view(), name='current-user'),
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/superuser/update/', SuperUserUpdateView.as_view(), name='superuser-self-update'),
+     path('external/clients/<int:client_id>/', ClientProfileAPIView.as_view(), name='external-client-profile'),
+     path('client-access-logs/', ClientAccessLogView.as_view(), name='client-access-logs'),
+     path('auth/admin/create/', AdminCreationView.as_view(), name='admin-create'),
+  path('auth/admin/creation-logs/', AdminCreationLogView.as_view(), name='admin-creation-logs'),
      
 ]
