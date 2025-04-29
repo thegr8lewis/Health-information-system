@@ -4,6 +4,18 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.models import User
 from .models import AdminCreationLog
+from django.contrib.auth.password_validation import validate_password
+
+class RequestPasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class VerifyResetCodeSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField(max_length=6)
+
+class ResetPasswordSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    password = serializers.CharField(validators=[validate_password])
 
 
 class AdminCreationSerializer(serializers.ModelSerializer):

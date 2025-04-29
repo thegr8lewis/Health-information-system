@@ -4,7 +4,10 @@ from .views import (
     ClientListCreate, ClientRetrieveUpdateDestroy,
       ClientDetailView, ProgramClientsView, DashboardStatsView,
         CurrentUserView,  LoginView, SuperUserUpdateView, 
-        ClientProfileAPIView, ClientAccessLogView, AdminCreationView, AdminCreationLogView
+        ClientProfileAPIView, ClientAccessLogView, AdminCreationView, AdminCreationLogView,
+        RequestPasswordResetView,
+    VerifyResetCodeView,
+    ResetPasswordView
 )
 
 urlpatterns = [
@@ -25,5 +28,8 @@ urlpatterns = [
      path('client-access-logs/', ClientAccessLogView.as_view(), name='client-access-logs'),
      path('auth/admin/create/', AdminCreationView.as_view(), name='admin-create'),
   path('auth/admin/creation-logs/', AdminCreationLogView.as_view(), name='admin-creation-logs'),
+      path('auth/password-reset/', RequestPasswordResetView.as_view(), name='request-password-reset'),
+    path('auth/password-reset/verify/', VerifyResetCodeView.as_view(), name='verify-reset-code'),
+    path('auth/password-reset/confirm/', ResetPasswordView.as_view(), name='reset-password'),
      
 ]

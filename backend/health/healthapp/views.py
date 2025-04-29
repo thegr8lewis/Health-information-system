@@ -16,6 +16,115 @@ from rest_framework.throttling import UserRateThrottle
 from django.utils import timezone
 from django.contrib.gis.geoip2 import GeoIP2
 from .serializers import AdminCreationSerializer, AdminCreationLogSerializer
+from .models import PasswordResetToken
+from .serializers import (
+    RequestPasswordResetSerializer,
+    VerifyResetCodeSerializer,
+    ResetPasswordSerializer
+)
+from django.core.mail import send_mail
+from django.conf import settings
+import random
+import string
+
+class RequestPasswordResetView(APIView):
+    def post(self, request):
+        serializer = RequestPasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            
+            try:
+                user = User.objects.get(email=email)
+                
+                # Generate a 6-digit code
+                code = ''.join(random.choices(string.digits, k=6))
+                
+                # Create or update password reset token
+                PasswordResetToken.objects.filter(user=user, is_used=False).update(is_used=True)
+                token = PasswordResetToken.objects.create(user=user, code=code)
+                
+                # Send email with the code
+                send_mail(
+                    subject='Password Reset Code',
+                    message=f'Your password reset code is: {code}. This code will expire in 10 minutes.',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                
+                return Response({'message': 'Password reset code sent to your email'}, status=status.HTTP_200_OK)
+            
+            except User.DoesNotExist:
+                # Still return success to prevent email enumeration
+                return Response({'message': 'If your email is registered, you will receive a reset code'}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class VerifyResetCodeView(APIView):
+    def post(self, request):
+        serializer = VerifyResetCodeSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            code = serializer.validated_data['code']
+            
+            try:
+                user = User.objects.get(email=email)
+                token = PasswordResetToken.objects.filter(
+                    user=user,
+                    code=code,
+                    is_used=False
+                ).latest('created_at')
+                
+                if token.is_valid:
+                    return Response({
+                        'message': 'Verification successful',
+                        'token': str(token.token)
+                    }, status=status.HTTP_200_OK)
+                else:
+                    return Response({
+                        'message': 'Verification code has expired'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                    
+            except (User.DoesNotExist, PasswordResetToken.DoesNotExist):
+                return Response({
+                    'message': 'Invalid verification code'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ResetPasswordView(APIView):
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            token_str = serializer.validated_data['token']
+            password = serializer.validated_data['password']
+            
+            try:
+                token = PasswordResetToken.objects.get(token=token_str, is_used=False)
+                
+                if token.is_valid:
+                    user = token.user
+                    user.set_password(password)
+                    user.save()
+                    
+                    # Mark token as used
+                    token.is_used = True
+                    token.save()
+                    
+                    return Response({
+                        'message': 'Password has been reset successfully'
+                    }, status=status.HTTP_200_OK)
+                else:
+                    return Response({
+                        'message': 'Reset token has expired'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                    
+            except PasswordResetToken.DoesNotExist:
+                return Response({
+                    'message': 'Invalid reset token'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class AdminCreationView(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]

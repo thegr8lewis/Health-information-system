@@ -7,6 +7,7 @@ import ProgramManagement from "../pages/ProgramManagement";
 import ClientManagement from "../pages/ClientManagement";
 import Client from "../pages/Client";
 import Settings from "../pages/Settings";
+import Forgetpassword from "../pages/Forgetpassword";
 
 const UserRoutes = () => {
   return (
@@ -23,6 +24,7 @@ const UserRoutes = () => {
         <Route path="/client" element={<Client />} />
         <Route path="/client/:id" element={<Client/>} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/forgot-password" element={<Forgetpassword />} />
       </Routes>
     </Layout>
   );

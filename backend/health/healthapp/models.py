@@ -1,5 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
+from datetime import timedelta
+from django.utils import timezone
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+    
+    @property
+    def is_valid(self):
+        # Token expires after 10 minutes
+        return not self.is_used and (timezone.now() - self.created_at) < timedelta(minutes=10)
 
 # Add to models.py
 class AdminCreationLog(models.Model):
