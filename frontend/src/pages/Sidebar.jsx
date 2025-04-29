@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, 
   Users, 
@@ -8,13 +8,13 @@ import {
   LogOut, 
   ChevronLeft, 
   ChevronRight,
-  HeartPulse,
-  Layout as LayoutIcon
+  HeartPulse
 } from "lucide-react";
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   
   const menuItems = [
     {
@@ -38,6 +38,23 @@ const Sidebar = () => {
       path: "/settings"
     }
   ];
+
+  const handleLogout = () => {
+    // Clear the access token from localStorage
+    localStorage.removeItem('accessToken');
+    
+    // Clear any other auth-related items if they exist
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    
+    // Optional: Clear any application state
+    // If you're using React context for auth state, update it here
+    
+    // Redirect to login page
+    navigate('/', { 
+      state: { message: 'You have been successfully logged out.' } 
+    });
+  };
   
   return (
     <div 
@@ -90,9 +107,12 @@ const Sidebar = () => {
       </div>
       
       <div className="p-4 border-t border-indigo-800">
-        <button className={`flex items-center text-indigo-300 hover:text-white transition-colors ${
-          collapsed ? "justify-center" : "px-4 py-2"
-        } w-full rounded-lg hover:bg-indigo-800`}>
+        <button 
+          onClick={handleLogout}
+          className={`flex items-center text-indigo-300 hover:text-white transition-colors ${
+            collapsed ? "justify-center" : "px-4 py-2"
+          } w-full rounded-lg hover:bg-indigo-800`}
+        >
           <LogOut className={`h-5 w-5 ${collapsed ? "" : "mr-3"}`} />
           {!collapsed && <span>Log Out</span>}
         </button>
