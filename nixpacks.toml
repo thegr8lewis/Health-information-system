@@ -1,17 +1,12 @@
-[phases]
-backend = { 
-  path = "./backend",
-  # Explicitly specify Python environment
-  pkgs = ["python39", "python39Packages.pip"] 
-}
-frontend = { 
-  path = "./frontend",
-  # Specify Node.js environment
-  pkgs = ["nodejs"] 
-}
+[phases.backend]
+path = "./backend"
+pkgs = ["python39", "python39Packages.pip"]
+
+[phases.frontend]
+path = "./frontend"
+pkgs = ["nodejs"]
 
 [install]
-# Install npm-run-all globally and Python dependencies
 cmd = """
 npm install -g npm-run-all && \
 cd backend && pip install -r requirements.txt && \
@@ -19,5 +14,4 @@ cd ../frontend && npm install
 """
 
 [start]
-# Use absolute paths for reliability
 cmd = "/usr/local/bin/npm-run-all --parallel start:backend start:frontend"
