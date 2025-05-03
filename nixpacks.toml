@@ -2,9 +2,9 @@
 backend = { path = "./backend" }
 frontend = { path = "./frontend" }
 
-[install]
-# Install npm-run-all globally in the container
-cmd = "npm install -g npm-run-all"
+[build]
+frontend = "cd frontend && npm install && npm run build"
 
 [start]
-cmd = "npm-run-all --parallel start:backend start:frontend"
+# Only run backend, serve frontend as static files
+cmd = "cd backend && python manage.py runserver 0.0.0.0:$PORT"
