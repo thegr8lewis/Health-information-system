@@ -4,7 +4,3 @@ frontend = { path = "./frontend" }
 
 [start]
 cmd = "npm-run-all --parallel start:backend start:frontend"
-
- Then add these to your package.json scripts
-"start:backend": "cd backend &&  python manage.py runserver",
-"start:frontend": "cd frontend &&  npm run dev"
