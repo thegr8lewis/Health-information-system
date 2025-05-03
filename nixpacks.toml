@@ -1,10 +1,23 @@
 [phases]
-backend = { path = "./backend" }
-frontend = { path = "./frontend" }
+backend = { 
+  path = "./backend",
+  # Explicitly specify Python environment
+  pkgs = ["python39", "python39Packages.pip"] 
+}
+frontend = { 
+  path = "./frontend",
+  # Specify Node.js environment
+  pkgs = ["nodejs"] 
+}
 
-[build]
-frontend = "cd frontend && npm install && npm run build"
+[install]
+# Install npm-run-all globally and Python dependencies
+cmd = """
+npm install -g npm-run-all && \
+cd backend && pip install -r requirements.txt && \
+cd ../frontend && npm install
+"""
 
 [start]
-# Only run backend, serve frontend as static files
-cmd = "cd backend && python manage.py runserver 0.0.0.0:$PORT"
+# Use absolute paths for reliability
+cmd = "/usr/local/bin/npm-run-all --parallel start:backend start:frontend"
