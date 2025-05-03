@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "start:backend": "cd backend && python manage.py runserver 0.0.0.0:8000",
+        "start:backend": "cd backend/health && python ../manage.py runserver 0.0.0.0:8000",
         "start:frontend": "cd frontend && npm run dev --port 3000"
     },
     "devDependencies": {
