@@ -4,14 +4,13 @@ pkgs = ["python39", "python39Packages.pip"]
 
 [phases.frontend]
 path = "./frontend"
-pkgs = ["nodejs"]
+pkgs = ["nodejs-18_x", "npm"]  # Matches your Node 18 environment
 
 [install]
 cmd = """
-npm install -g npm-run-all && \
-cd backend && pip install -r requirements.txt && \
-cd ../frontend && npm install
+cd frontend && npm install && \
+cd ../backend && pip install -r requirements.txt
 """
 
 [start]
-cmd = "/usr/local/bin/npm-run-all --parallel start:backend start:frontend"
+cmd = "cd frontend && npm run start:all"
